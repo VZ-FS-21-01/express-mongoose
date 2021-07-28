@@ -7,6 +7,8 @@ const GalleryItem = require('./models/galleryItem')
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 // console.log(process.env.DBURI)
 // connect nimmt den String und ein Objekt mit Optionen
@@ -39,12 +41,15 @@ app.get('/add-new', (req, res) => {
         })
         .catch((err) => console.log(err))
 })
+// Wir wollen jetzt dieses Dokument aus input Feldern befüllen
+// Tipp: wir brauchen auch post
 
 app.get('/gallery', (req, res) => {
     // alle Dakumente in der Colection holen
     GalleryItem.find()
         .then((result) => {
-            res.send(result)
+            // res.send(result)
+            res.render('gallery', { data: result })
         })
         .catch((err) => console.log(err))
 })
@@ -53,6 +58,34 @@ app.get('/single', (req, res) => {
     GalleryItem.findById('610115b9cd34e94a3331f381')
         .then((result) => {
             res.send(result)
+        })
+        .catch((err) => console.log(err))
+})
+
+
+
+app.get('/add', (req, res) => {
+    res.render('add')
+})
+app.post('/add', (req, res) => {
+    console.log(req.body)
+    const galleryItem = new GalleryItem({
+        url: req.body.url,
+        author: req.body.author,
+        rating: req.body.rating
+    })
+    galleryItem.save()
+        .then((result) => {
+            res.redirect('/add')
+        })
+        .catch((err) => console.log(err))
+})
+app.get('/gallery/:id', (req, res) => {
+    console.log(req.params.id)
+    GalleryItem.findById(req.params.id)
+        .then((result) => {
+            // res.send(result)
+            res.render('galleryItem', { data: result })
         })
         .catch((err) => console.log(err))
 })
